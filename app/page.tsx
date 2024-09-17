@@ -1,100 +1,133 @@
-import Image from "next/image";
+import { auth } from "@clerk/nextjs/server";
+import { redirect } from "next/navigation";
+import Link from "next/link";
+import { List, Clock, Github, Twitter, Facebook } from "lucide-react";
 
-export default function Home() {
+export default async function Home() {
+  const { userId } = auth();
+
+  if (userId) {
+    redirect("/dashboard");
+  }
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+    <div className="min-h-screen flex flex-col bg-gray-50">
+      {/* Hero Section */}
+      <div className="relative bg-white overflow-hidden">
+        <div className="max-w-7xl mx-auto">
+          <div className="relative z-10 pb-8 bg-white sm:pb-16 md:pb-20 lg:max-w-2xl lg:w-full lg:pb-28 xl:pb-32">
+            <main className="mt-10 mx-auto max-w-7xl px-4 sm:mt-12 sm:px-6 md:mt-16 lg:mt-20 lg:px-8 xl:mt-28">
+              <div className="sm:text-center lg:text-left">
+                <h1 className="text-4xl tracking-tight font-extrabold text-gray-900 sm:text-5xl md:text-6xl">
+                  <span className="block xl:inline">Manage your tasks</span>{" "}
+                  <span className="block text-blue-600 xl:inline">
+                    effortlessly
+                  </span>
+                </h1>
+                <p className="mt-3 text-base text-gray-500 sm:mt-5 sm:text-lg sm:max-w-xl sm:mx-auto md:mt-5 md:text-xl lg:mx-0">
+                  TodoMaster helps you organize your life, boost productivity,
+                  and never miss a deadline. Start managing your tasks more
+                  efficiently today!
+                </p>
+                <div className="mt-5 sm:mt-8 sm:flex sm:justify-center lg:justify-start">
+                  <div className="rounded-md">
+                    <Link
+                      href="/sign-up"
+                      className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 md:py-4 md:text-lg md:px-10"
+                    >
+                      Get started
+                    </Link>
+                  </div>
+                  <div className="mt-3 sm:mt-0 sm:ml-3">
+                    <Link
+                      href="/sign-in"
+                      className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 md:py-4 md:text-lg md:px-10"
+                    >
+                      Sign In
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            </main>
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
+      </div>
+
+      {/* Features Section */}
+      <div className="py-12 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="lg:text-center">
+            <h2 className="text-base text-blue-600 font-semibold tracking-wide uppercase">
+              Features
+            </h2>
+            <p className="mt-2 text-3xl leading-8 font-extrabold tracking-tight text-gray-900 sm:text-4xl">
+              A better way to manage tasks
+            </p>
+            <p className="mt-4 max-w-2xl text-xl text-gray-500 lg:mx-auto">
+              TodoMaster provides powerful features to help you stay organized
+              and productive.
+            </p>
+          </div>
+
+          <div className="mt-10">
+            <dl className="space-y-10 md:space-y-0 md:grid md:grid-cols-2 md:gap-x-8 md:gap-y-10">
+              <div className="relative">
+                <dt>
+                  <div className="absolute flex items-center justify-center h-12 w-12 rounded-md bg-blue-500 text-white">
+                    <List className="h-6 w-6" />
+                  </div>
+                  <p className="ml-16 text-lg leading-6 font-medium text-gray-900">
+                    Task Organization
+                  </p>
+                </dt>
+                <dd className="mt-2 ml-16 text-base text-gray-500">
+                  Easily create, categorize, and prioritize your tasks to stay
+                  on top of your to-do list.
+                </dd>
+              </div>
+
+              <div className="relative">
+                <dt>
+                  <div className="absolute flex items-center justify-center h-12 w-12 rounded-md bg-blue-500 text-white">
+                    <Clock className="h-6 w-6" />
+                  </div>
+                  <p className="ml-16 text-lg leading-6 font-medium text-gray-900">
+                    Reminders
+                  </p>
+                </dt>
+                <dd className="mt-2 ml-16 text-base text-gray-500">
+                  Set reminders for important tasks and never miss a deadline
+                  again.
+                </dd>
+              </div>
+            </dl>
+          </div>
+        </div>
+      </div>
+
+      {/* Footer */}
+      <footer className="bg-white mt-auto">
+        <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 md:flex md:items-center md:justify-between lg:px-8">
+          <div className="flex justify-center space-x-6 md:order-2">
+            <a href="#" className="text-gray-400 hover:text-gray-500">
+              <span className="sr-only">GitHub</span>
+              <Github className="h-6 w-6" />
+            </a>
+            <a href="#" className="text-gray-400 hover:text-gray-500">
+              <span className="sr-only">Twitter</span>
+              <Twitter className="h-6 w-6" />
+            </a>
+            <a href="#" className="text-gray-400 hover:text-gray-500">
+              <span className="sr-only">Facebook</span>
+              <Facebook className="h-6 w-6" />
+            </a>
+          </div>
+          <div className="mt-8 md:mt-0 md:order-1">
+            <p className="text-center text-base text-gray-400">
+              &copy; 2023 TodoMaster. All rights reserved.
+            </p>
+          </div>
+        </div>
       </footer>
     </div>
   );
