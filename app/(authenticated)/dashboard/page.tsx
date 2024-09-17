@@ -6,11 +6,13 @@ import { TodoItem } from "@/components/TodoItem";
 import { TodoForm } from "@/components/TodoForm";
 import { Todo } from "@prisma/client";
 import { useUser } from "@clerk/nextjs";
-import { CheckCircle, AlertTriangle } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
+import { AlertTriangle } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Input } from "@/components/ui/input";
+import { Pagination } from "@/components/Pagination";
+import Link from "next/link";
+import { useDebounceValue } from "usehooks-ts";
 
 export default function Dashboard() {
   const { user } = useUser();
@@ -18,34 +20,43 @@ export default function Dashboard() {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [subscriptionEnds, setSubscriptionEnds] = useState<string | null>(null);
-  const router = useRouter();
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearchTerm] = useDebounceValue(searchTerm, 300);
 
-  const fetchTodos = useCallback(async () => {
-    try {
-      const response = await fetch("/api/todos");
-      if (!response.ok) {
-        throw new Error("Failed to fetch todos");
+  const fetchTodos = useCallback(
+    async (page: number) => {
+      try {
+        const response = await fetch(
+          `/api/todos?page=${page}&search=${debouncedSearchTerm}`
+        );
+        if (!response.ok) {
+          throw new Error("Failed to fetch todos");
+        }
+        const data = await response.json();
+        setTodos(data.todos);
+        setTotalPages(data.totalPages);
+        setCurrentPage(data.currentPage);
+        setIsLoading(false);
+        toast({
+          title: "Success",
+          description: "Todos fetched successfully.",
+        });
+      } catch (error) {
+        setIsLoading(false);
+        toast({
+          title: "Error",
+          description: "Failed to fetch todos. Please try again.",
+          variant: "destructive",
+        });
       }
-      const data = await response.json();
-      setTodos(data);
-      setIsLoading(false);
-      toast({
-        title: "Success",
-        description: "Todos fetched successfully.",
-      });
-    } catch (error) {
-      setIsLoading(false);
-      toast({
-        title: "Error",
-        description: "Failed to fetch todos. Please try again.",
-        variant: "destructive",
-      });
-    }
-  }, [toast]);
+    },
+    [toast, debouncedSearchTerm]
+  );
 
   useEffect(() => {
-    fetchTodos();
+    fetchTodos(1);
     fetchSubscriptionStatus();
   }, [fetchTodos]);
 
@@ -54,11 +65,14 @@ export default function Dashboard() {
     if (response.ok) {
       const data = await response.json();
       setIsSubscribed(data.isSubscribed);
-      setSubscriptionEnds(data.subscriptionEnds);
     }
   };
 
   const handleAddTodo = async (title: string) => {
+    toast({
+      title: "Adding Todo",
+      description: "Please wait...",
+    });
     try {
       const response = await fetch("/api/todos", {
         method: "POST",
@@ -68,7 +82,7 @@ export default function Dashboard() {
       if (!response.ok) {
         throw new Error("Failed to add todo");
       }
-      fetchTodos();
+      await fetchTodos(currentPage);
       toast({
         title: "Success",
         description: "Todo added successfully.",
@@ -83,6 +97,10 @@ export default function Dashboard() {
   };
 
   const handleUpdateTodo = async (id: string, completed: boolean) => {
+    toast({
+      title: "Updating Todo",
+      description: "Please wait...",
+    });
     try {
       const response = await fetch(`/api/todos/${id}`, {
         method: "PUT",
@@ -92,7 +110,7 @@ export default function Dashboard() {
       if (!response.ok) {
         throw new Error("Failed to update todo");
       }
-      fetchTodos();
+      await fetchTodos(currentPage);
       toast({
         title: "Success",
         description: "Todo updated successfully.",
@@ -107,6 +125,10 @@ export default function Dashboard() {
   };
 
   const handleDeleteTodo = async (id: string) => {
+    toast({
+      title: "Deleting Todo",
+      description: "Please wait...",
+    });
     try {
       const response = await fetch(`/api/todos/${id}`, {
         method: "DELETE",
@@ -114,7 +136,7 @@ export default function Dashboard() {
       if (!response.ok) {
         throw new Error("Failed to delete todo");
       }
-      fetchTodos();
+      await fetchTodos(currentPage);
       toast({
         title: "Success",
         description: "Todo deleted successfully.",
@@ -128,21 +150,8 @@ export default function Dashboard() {
     }
   };
 
-  const handleSubscribe = async () => {
-    const response = await fetch("/api/subscription", { method: "POST" });
-    if (response.ok) {
-      const data = await response.json();
-      setIsSubscribed(true);
-      setSubscriptionEnds(data.subscriptionEnds);
-      router.refresh();
-    } else {
-      const data = await response.json();
-      alert(data.error);
-    }
-  };
-
   return (
-    <div className="container mx-auto p-4 max-w-3xl">
+    <div className="container mx-auto p-4 max-w-3xl mb-8">
       <h1 className="text-3xl font-bold mb-8 text-center">
         Welcome, {user?.emailAddresses[0].emailAddress}!
       </h1>
@@ -158,8 +167,11 @@ export default function Dashboard() {
         <Alert variant="destructive" className="mb-8">
           <AlertTriangle className="h-4 w-4" />
           <AlertDescription>
-            You&apos;ve reached the maximum number of free todos. Please
-            subscribe to add more.
+            You&apos;ve reached the maximum number of free todos.{" "}
+            <Link href="/subscribe" className="font-medium underline">
+              Subscribe now
+            </Link>{" "}
+            to add more.
           </AlertDescription>
         </Alert>
       )}
@@ -168,6 +180,13 @@ export default function Dashboard() {
           <CardTitle>Your Todos</CardTitle>
         </CardHeader>
         <CardContent>
+          <Input
+            type="text"
+            placeholder="Search todos..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="mb-4"
+          />
           {isLoading ? (
             <p className="text-center text-muted-foreground">
               Loading your todos...
@@ -177,34 +196,26 @@ export default function Dashboard() {
               You don&apos;t have any todos yet. Add one above!
             </p>
           ) : (
-            <ul className="space-y-4">
-              {todos.map((todo: Todo) => (
-                <TodoItem
-                  key={todo.id}
-                  todo={todo}
-                  onUpdate={handleUpdateTodo}
-                  onDelete={handleDeleteTodo}
-                />
-              ))}
-            </ul>
+            <>
+              <ul className="space-y-4">
+                {todos.map((todo: Todo) => (
+                  <TodoItem
+                    key={todo.id}
+                    todo={todo}
+                    onUpdate={handleUpdateTodo}
+                    onDelete={handleDeleteTodo}
+                  />
+                ))}
+              </ul>
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={(page) => fetchTodos(page)}
+              />
+            </>
           )}
         </CardContent>
       </Card>
-      {isSubscribed ? (
-        <div className="mt-8 text-center">
-          <Alert>
-            <CheckCircle className="h-4 w-4" />
-            <AlertDescription>
-              You are a subscribed user. Subscription ends on{" "}
-              {new Date(subscriptionEnds!).toLocaleDateString()}
-            </AlertDescription>
-          </Alert>
-        </div>
-      ) : (
-        <div className="mt-8 text-center">
-          <Button onClick={handleSubscribe}>Subscribe Now</Button>
-        </div>
-      )}
     </div>
   );
 }

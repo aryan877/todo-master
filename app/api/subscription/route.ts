@@ -16,7 +16,6 @@ export async function POST() {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    // Set subscription end date to one month from now
     const subscriptionEnds = new Date();
     subscriptionEnds.setMonth(subscriptionEnds.getMonth() + 1);
 
@@ -58,7 +57,6 @@ export async function GET() {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    // Check if the subscription has expired
     const now = new Date();
     if (user.subscriptionEnds && user.subscriptionEnds < now) {
       await prisma.user.update({

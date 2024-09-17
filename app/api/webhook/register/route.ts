@@ -51,9 +51,19 @@ export async function POST(req: Request) {
 
   if (eventType === "user.created") {
     try {
+      const { id, email_addresses } = evt.data;
+      const primaryEmail = email_addresses.find(
+        (email) => email.id === evt.data.primary_email_address_id
+      );
+
+      if (!primaryEmail) {
+        return new Response("No primary email found", { status: 400 });
+      }
+
       const newUser = await prisma.user.create({
         data: {
           id: id!,
+          email: primaryEmail.email_address,
           isSubscribed: false,
         },
       });
