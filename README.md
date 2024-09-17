@@ -82,6 +82,24 @@ To set up the webhook:
 
 The webhook handler is implemented in `app/api/webhook/register/route.ts`. It verifies the webhook signature and creates a new user record in the database when a user is created in Clerk.
 
+## @Codebase
+
+### Setting up an Admin User
+
+To test the admin functionality, you need to manually set the user's role to "admin" in Clerk. Here's how to do it:
+
+1. Log in to your Clerk Dashboard.
+2. Go to the "Users" section.
+3. Find the user you want to make an admin.
+4. Click on the user to open their details.
+5. Scroll down to the "Public metadata" section.
+6. Add a new key-value pair:
+   - Key: `role`
+   - Value: `admin`
+7. Save the changes.
+
+Now, when this user logs in, they will have admin privileges in the application.
+
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
